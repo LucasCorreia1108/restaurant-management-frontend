@@ -27,7 +27,7 @@ export const queryKeys = {
   categories: ['categories'] as const,
   orders: ['orders'] as const,
   kitchen: ['kitchen'] as const,
-  reports: ['reports'] as const,
+  reports: (from?: string, to?: string) => ['reports', { from, to }] as const,
   bill: (tableId: string) => ['payments', 'bill', tableId] as const,
   ordersByTable: (tableId: string) => ['orders', 'table', tableId] as const,
 }
@@ -243,10 +243,12 @@ export function useUpdateKitchenStatus() {
   })
 }
 
-export function useReports() {
+export function useReports(params?: { from?: string; to?: string }) {
+  const from = params?.from
+  const to = params?.to
   return useQuery({
-    queryKey: queryKeys.reports,
-    queryFn: () => reportsService.get(),
+    queryKey: queryKeys.reports(from, to),
+    queryFn: () => reportsService.get({ from, to }),
   })
 }
 

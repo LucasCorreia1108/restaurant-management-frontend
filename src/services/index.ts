@@ -218,44 +218,88 @@ export const dashboardService = {
 }
 
 export const reportsService = {
-  async get(): Promise<ReportsData> {
+  async get(params?: { from?: string; to?: string }): Promise<ReportsData> {
+    const query = new URLSearchParams()
+    if (params?.from) query.set('from', params.from)
+    if (params?.to) query.set('to', params.to)
+    const qs = query.toString()
+    const suffix = qs ? `?${qs}` : ''
+
     const [sales, topItems, waiters, ordersByStatus] = await Promise.all([
       api.get<{
         totalRevenue: number | string
         totalPayments: number
         payments: Array<{ paidAt: string; amount: number | string }>
-      }>('/reports/sales'),
+      }>(`/reports/sales${suffix}`),
       api.get<
         Array<{
           menuItem?: { name?: string; price?: number | string } | null
           quantitySold: number | null
         }>
-      >('/reports/top-menu-items?limit=5'),
+      >(`/reports/top-menu-items?limit=5${qs ? `&${qs}` : ''}`),
       api.get<
         Array<{
           waiter: { name: string }
           ordersCount: number
           totalSales: number | string
         }>
-      >('/reports/waiter-performance'),
-      api.get<Array<{ status: string; count: number }>>('/reports/orders-by-status'),
+      >(`/reports/waiter-performance${suffix}`),
+      api.get<Array<{ status: string; count: number }>>(
+        `/reports/orders-by-status${suffix}`,
+      ),
     ])
+
+    const toLocalDateKey = (date: Date) => {
+      const y = date.getFullYear()
+      const m = String(date.getMonth() + 1).padStart(2, '0')
+      const d = String(date.getDate()).padStart(2, '0')
+      return `${y}-${m}-${d}`
+    }
 
     const byDay = new Map<string, { revenue: number; orders: number }>()
     for (const payment of sales.payments ?? []) {
-      const key = new Date(payment.paidAt).toLocaleDateString('pt-BR', {
-        weekday: 'short',
-      })
-      const current = byDay.get(key) ?? { revenue: 0, orders: 0 }
+      const sortKey = toLocalDateKey(new Date(payment.paidAt))
+      const current = byDay.get(sortKey) ?? { revenue: 0, orders: 0 }
       current.revenue += toNumber(payment.amount)
       current.orders += 1
-      byDay.set(key, current)
+      byDay.set(sortKey, current)
     }
 
-    const salesByDay =
-      byDay.size > 0
-        ? Array.from(byDay.entries()).map(([date, value]) => ({ date, ...value }))
-        : [{ date: 'Hoje', revenue: toNumber(sales.totalRevenue), orders: sales.totalPayments }]
+    const buildDayRange = (from: string, to: string) => {
+      const days: string[] = []
+      const cursor = new Date(`${from}T12:00:00`)
+      const end = new Date(`${to}T12:00:00`)
+      while (cursor <= end) {
+        days.push(toLocalDateKey(cursor))
+        cursor.setDate(cursor.getDate() + 1)
+      }
+      return days
+    }
+
+    let rangeKeys: string[]
+    if (params?.from && params?.to) {
+      rangeKeys = buildDayRange(params.from, params.to)
+    } else if (byDay.size > 0) {
+      const keys = Array.from(byDay.keys()).sort()
+      rangeKeys = buildDayRange(keys[0], keys[keys.length - 1])
+    } else {
+      const today = toLocalDateKey(new Date())
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 6)
+      rangeKeys = buildDayRange(toLocalDateKey(weekAgo), today)
+    }
+
+    const salesByDay = rangeKeys.map((sortKey) => {
+      const value = byDay.get(sortKey) ?? { revenue: 0, orders: 0 }
+      return {
+        date: new Date(`${sortKey}T12:00:00`).toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+        }),
+        revenue: value.revenue,
+        orders: value.orders,
+      }
+    })
 
     return {
       totalRevenue: toNumber(sales.totalRevenue),

@@ -48,7 +48,6 @@ export function KitchenPage() {
     if (!ticket) return
     if (ticket.status === targetStatus) return
 
-    // Só permite avanço sequencial (API não aceita pular PREPARING → READY sem passar por PREPARING)
     const transitions: Record<ColumnId, ColumnId | null> = {
       SENT_TO_KITCHEN: OrderStatus.PREPARING,
       PREPARING: OrderStatus.READY,
@@ -170,7 +169,6 @@ export function KitchenPage() {
                     onDragEnd={() => {
                       setDraggingId(null)
                       setDropTarget(null)
-                      // evita click fantasma após drag
                       window.setTimeout(() => {
                         didDragRef.current = false
                       }, 50)

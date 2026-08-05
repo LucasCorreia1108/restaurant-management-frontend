@@ -14,7 +14,7 @@ export function ForgotPasswordPage() {
   } = useForm<FormValues>()
 
   const onSubmit = handleSubmit(() => {
-    // Endpoint ainda não exposto pela API NestJS
+
   })
 
   return (

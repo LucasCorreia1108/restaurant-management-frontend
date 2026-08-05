@@ -166,7 +166,6 @@ export function WaiterPage() {
         notes: orderNotes || undefined,
       })
       enqueueSnackbar(`Pedido enviado à cozinha — Mesa ${tableNumber}`, { variant: 'success' })
-      // Mantém a mesa selecionada para acompanhar entregas
       selectTable(tableId, tableNumber!)
       useCartStore.setState({ items: [] })
       setOrderNotes('')
