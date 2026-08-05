@@ -72,13 +72,13 @@ export function AuthLayout() {
             </Box>
           </Typography>
           <Typography sx={{ color: 'rgba(249,250,251,0.72)', fontSize: '1.05rem', lineHeight: 1.6 }}>
-            Gestão de mesas, cozinha e caixa em uma experiência premium pensada para tablets e
+            Gestão de mesas, cozinha e caixa em uma experiência premium pensada para mesas e
             salões modernos.
           </Typography>
         </Box>
 
         <Typography sx={{ color: 'rgba(249,250,251,0.45)', fontSize: 13 }}>
-          Inspirado em Toast · Square · Lightspeed · Micros
+          Feito por <strong>Lucas Correia</strong> - 2026
         </Typography>
       </Box>
 

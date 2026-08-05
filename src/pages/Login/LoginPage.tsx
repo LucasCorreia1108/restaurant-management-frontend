@@ -32,9 +32,9 @@ export function LoginPage() {
     formState: { errors },
   } = useForm<LoginCredentials>({
     defaultValues: {
-      email: 'admin@restaurant.com',
-      password: 'Admin@123',
-      remember: true,
+      email: '',
+      password: '',
+      remember: false,
     },
   })
 
@@ -144,23 +144,6 @@ export function LoginPage() {
             {login.isPending ? 'Entrando…' : 'Acessar sistema'}
           </Button>
         </Stack>
-      </Box>
-
-      <Box
-        sx={{
-          mt: 3.5,
-          p: 2,
-          borderRadius: 3,
-          bgcolor: 'action.hover',
-          fontSize: 13,
-          color: 'text.secondary',
-        }}
-      >
-        Seed API:
-        <br />
-        <strong>admin@restaurant.com</strong> / Admin@123
-        <br />
-        waiter@ / Waiter@123 · kitchen@ / Kitchen@123 · cashier@ / Cashier@123
       </Box>
     </Box>
   )
