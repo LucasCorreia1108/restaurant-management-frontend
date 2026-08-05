@@ -70,7 +70,7 @@ export function MenuPage() {
     <Box>
       <PageHeader
         title="Cardápio"
-        subtitle="Itens sincronizados com /menu da API"
+        subtitle="Itens disponíveis para pedido"
         actions={
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {isAdmin && (

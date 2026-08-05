@@ -79,7 +79,7 @@ export function CashierPage() {
     <Box>
       <PageHeader
         title="Caixa"
-        subtitle="Fechamento via /payments/table e consulta de conta"
+        subtitle="Mesas com pedidos prontos para pagamento"
       />
 
       <Box

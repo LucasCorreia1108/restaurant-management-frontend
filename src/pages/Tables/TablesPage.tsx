@@ -76,7 +76,7 @@ export function TablesPage() {
     <Box>
       <PageHeader
         title="Gestão de Mesas"
-        subtitle="Planta do salão sincronizada com /tables"
+        subtitle="Status das mesas e ações disponíveis"
         actions={
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {(
