@@ -99,6 +99,8 @@ export function getCategoryLabel(type: CategoryTypeT): string {
       return 'Entradas'
     case CategoryType.MAIN_COURSE:
       return 'Pratos Principais'
+    case CategoryType.DESSERT:
+      return 'Sobremesas'
     case CategoryType.DRINK:
       return 'Bebidas'
     default:
