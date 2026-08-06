@@ -177,4 +177,23 @@ describe('services', () => {
     expect(report.salesByDay).toHaveLength(2)
     expect(report.salesByDay.reduce((sum, day) => sum + day.revenue, 0)).toBe(30)
   })
+
+  it('agrupa pagamentos noturnos no dia de Sao Paulo, nao no dia UTC seguinte', async () => {
+    mockedApi.get
+      .mockResolvedValueOnce({
+        totalRevenue: '30',
+        totalPayments: 1,
+        payments: [{ paidAt: '2026-08-07T01:30:00.000Z', amount: '30' }],
+      })
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+
+    const report = await reportsService.get({ from: '2026-08-06', to: '2026-08-07' })
+
+    expect(report.salesByDay).toEqual([
+      { date: '06/08', revenue: 30, orders: 1 },
+      { date: '07/08', revenue: 0, orders: 0 },
+    ])
+  })
 })
