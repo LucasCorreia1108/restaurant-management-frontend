@@ -18,8 +18,23 @@ import {
   type UpdateMenuItemPayload,
   type UploadImageResponse,
   type Category,
+  type CreateUserPayload,
+  type User,
 } from '@/types'
 import { toNumber } from '@/utils'
+
+const RESTAURANT_TIME_ZONE = 'America/Sao_Paulo'
+
+function toRestaurantDateKey(date: Date): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: RESTAURANT_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
 
 function mapKitchenTicket(order: Order): KitchenTicket {
   return {
@@ -48,6 +63,12 @@ export const authService = {
   },
 }
 
+export const usersService = {
+  create(payload: CreateUserPayload): Promise<User> {
+    return api.post<User>('/users', payload)
+  },
+}
+
 export const waitersService = {
   list() {
     return api.get<Array<{ id: string; name: string; email: string }>>('/waiters')
@@ -69,7 +90,7 @@ export const tablesService = {
 
     if (waiterId) {
       body.waiterId = waiterId
-    } else if (user?.role === UserRole.ADMIN) {
+    } else if (user?.role === UserRole.ADMIN || user?.role === UserRole.MANAGER) {
       const waiters = await waitersService.list()
       if (!waiters[0]) {
         throw new Error('Cadastre um garçom antes de abrir a mesa como admin')
@@ -249,16 +270,9 @@ export const reportsService = {
       ),
     ])
 
-    const toLocalDateKey = (date: Date) => {
-      const y = date.getFullYear()
-      const m = String(date.getMonth() + 1).padStart(2, '0')
-      const d = String(date.getDate()).padStart(2, '0')
-      return `${y}-${m}-${d}`
-    }
-
     const byDay = new Map<string, { revenue: number; orders: number }>()
     for (const payment of sales.payments ?? []) {
-      const sortKey = toLocalDateKey(new Date(payment.paidAt))
+      const sortKey = toRestaurantDateKey(new Date(payment.paidAt))
       const current = byDay.get(sortKey) ?? { revenue: 0, orders: 0 }
       current.revenue += toNumber(payment.amount)
       current.orders += 1
@@ -270,7 +284,7 @@ export const reportsService = {
       const cursor = new Date(`${from}T12:00:00`)
       const end = new Date(`${to}T12:00:00`)
       while (cursor <= end) {
-        days.push(toLocalDateKey(cursor))
+        days.push(toRestaurantDateKey(cursor))
         cursor.setDate(cursor.getDate() + 1)
       }
       return days
@@ -283,10 +297,10 @@ export const reportsService = {
       const keys = Array.from(byDay.keys()).sort()
       rangeKeys = buildDayRange(keys[0], keys[keys.length - 1])
     } else {
-      const today = toLocalDateKey(new Date())
+      const today = toRestaurantDateKey(new Date())
       const weekAgo = new Date()
       weekAgo.setDate(weekAgo.getDate() - 6)
-      rangeKeys = buildDayRange(toLocalDateKey(weekAgo), today)
+      rangeKeys = buildDayRange(toRestaurantDateKey(weekAgo), today)
     }
 
     const salesByDay = rangeKeys.map((sortKey) => {
