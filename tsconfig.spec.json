@@ -4,5 +4,10 @@
     "types": ["jest", "node", "@testing-library/jest-dom"],
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/test/**/*.ts", "src/test/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/test/**/*.ts", "src/test/**/*.tsx"],
+  "exclude": [
+    "src/test",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
 }
