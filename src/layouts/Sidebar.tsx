@@ -20,15 +20,22 @@ import RestaurantMenuRoundedIcon from '@mui/icons-material/RestaurantMenuRounded
 import SoupKitchenRoundedIcon from '@mui/icons-material/SoupKitchenRounded'
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded'
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded'
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded'
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded'
 import { NavLink, useLocation } from 'react-router-dom'
 import { brand } from '@/theme'
-import { useUiStore } from '@/store'
+import { useAuthStore, useUiStore } from '@/store'
+import { UserRole, type UserRole as UserRoleType } from '@/types'
 
 export const DRAWER_WIDTH = 260
 export const DRAWER_WIDTH_COLLAPSED = 84
 
-const navItems = [
+const navItems: Array<{
+  to: string
+  label: string
+  icon: React.ReactNode
+  roles?: UserRoleType[]
+}> = [
   { to: '/', label: 'Dashboard', icon: <DashboardRoundedIcon /> },
   { to: '/mesas', label: 'Mesas', icon: <TableRestaurantRoundedIcon /> },
   { to: '/garcom', label: 'Garçom', icon: <RoomServiceRoundedIcon /> },
@@ -36,6 +43,12 @@ const navItems = [
   { to: '/cozinha', label: 'Cozinha', icon: <SoupKitchenRoundedIcon /> },
   { to: '/caixa', label: 'Caixa', icon: <PointOfSaleRoundedIcon /> },
   { to: '/relatorios', label: 'Relatórios', icon: <InsightsRoundedIcon /> },
+  {
+    to: '/usuarios/novo',
+    label: 'Novo acesso',
+    icon: <PersonAddAltRoundedIcon />,
+    roles: [UserRole.ADMIN, UserRole.MANAGER],
+  },
 ]
 
 interface SidebarProps {
@@ -48,6 +61,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const collapsed = useUiStore((s) => s.sidebarCollapsed)
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
+  const userRole = useAuthStore((s) => s.user?.role)
   const location = useLocation()
   const width = collapsed && isMdUp ? DRAWER_WIDTH_COLLAPSED : DRAWER_WIDTH
 
@@ -102,7 +116,9 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)' }} />
 
       <List sx={{ px: 1.5, py: 2, flex: 1 }}>
-        {navItems.map((item) => {
+        {navItems
+          .filter((item) => !item.roles || (userRole && item.roles.includes(userRole)))
+          .map((item) => {
           const active =
             item.to === '/'
               ? location.pathname === '/'
@@ -152,7 +168,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           ) : (
             button
           )
-        })}
+          })}
       </List>
 
       {(!collapsed || !isMdUp) && (

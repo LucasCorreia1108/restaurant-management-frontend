@@ -40,6 +40,7 @@ export type CategoryType = (typeof CategoryType)[keyof typeof CategoryType]
 
 export const UserRole = {
   ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
   WAITER: 'WAITER',
   KITCHEN: 'KITCHEN',
   CASHIER: 'CASHIER',
@@ -219,6 +220,13 @@ export interface LoginCredentials {
   email: string
   password: string
   remember?: boolean
+}
+
+export interface CreateUserPayload {
+  name: string
+  email: string
+  password: string
+  role: UserRole
 }
 
 export interface CreateOrderPayload {

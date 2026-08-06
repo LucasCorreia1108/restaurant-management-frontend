@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout, AuthLayout } from '@/layouts'
-import { GuestRoute, ProtectedRoute } from './ProtectedRoute'
+import { GuestRoute, ProtectedRoute, RoleRoute } from './ProtectedRoute'
 import { LoginPage } from '@/pages/Login/LoginPage'
 import { ForgotPasswordPage } from '@/pages/Login/ForgotPasswordPage'
 import { DashboardPage } from '@/pages/Dashboard/DashboardPage'
@@ -10,6 +10,8 @@ import { MenuPage } from '@/pages/Menu/MenuPage'
 import { KitchenPage } from '@/pages/Kitchen/KitchenPage'
 import { CashierPage } from '@/pages/Cashier/CashierPage'
 import { ReportsPage } from '@/pages/Reports/ReportsPage'
+import { CreateUserPage } from '@/pages/Users/CreateUserPage'
+import { UserRole } from '@/types'
 
 export function AppRouter() {
   return (
@@ -31,6 +33,9 @@ export function AppRouter() {
             <Route path="cozinha" element={<KitchenPage />} />
             <Route path="caixa" element={<CashierPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
+            <Route element={<RoleRoute allowedRoles={[UserRole.ADMIN, UserRole.MANAGER]} />}>
+              <Route path="usuarios/novo" element={<CreateUserPage />} />
+            </Route>
           </Route>
         </Route>
 

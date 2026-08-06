@@ -1,4 +1,4 @@
-import { formatDistanceToNowStrict, format } from 'date-fns'
+import { formatDistanceToNowStrict } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { brand } from '@/theme'
 import {
@@ -9,6 +9,8 @@ import {
   type Order,
   type TableStatus as TableStatusType,
 } from '@/types'
+
+const RESTAURANT_TIME_ZONE = 'America/Sao_Paulo'
 
 export function parseMoney(value: string | number | undefined | null): number {
   if (value == null) return 0
@@ -46,7 +48,12 @@ export function formatCurrency(value: string | number): string {
 }
 
 export function formatTime(date: string | Date): string {
-  return format(new Date(date), 'HH:mm', { locale: ptBR })
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: RESTAURANT_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(date))
 }
 
 export function formatElapsed(date: string | Date): string {
@@ -54,7 +61,14 @@ export function formatElapsed(date: string | Date): string {
 }
 
 export function formatDateTime(date: string | Date): string {
-  return format(new Date(date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+  const value = new Date(date)
+  const formattedDate = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: RESTAURANT_TIME_ZONE,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(value)
+  return `${formattedDate} às ${formatTime(value)}`
 }
 
 export function getTableStatusColor(status: TableStatusType): string {

@@ -10,6 +10,7 @@ import {
   reportsService,
   tablesService,
   uploadsService,
+  usersService,
 } from '@/services'
 import type {
   CreateMenuItemPayload,
@@ -17,6 +18,7 @@ import type {
   LoginCredentials,
   PaymentMethod,
   UpdateMenuItemPayload,
+  CreateUserPayload,
 } from '@/types'
 
 export const queryKeys = {
@@ -255,5 +257,11 @@ export function useReports(params?: { from?: string; to?: string }) {
 export function useLogin() {
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
+  })
+}
+
+export function useCreateUser() {
+  return useMutation({
+    mutationFn: (payload: CreateUserPayload) => usersService.create(payload),
   })
 }

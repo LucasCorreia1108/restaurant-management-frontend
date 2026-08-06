@@ -1,13 +1,14 @@
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useSnackbar } from 'notistack'
 import { PageHeader, EmptyState, GridSkeleton, Surface } from '@/components/ui'
 import { TableCard } from '@/components/tables/TableCard'
 import { useOpenTable, useRequestBill, useTables } from '@/hooks'
-import { TableStatus, UserRole, type Table, type TableStatus as TableStatusType } from '@/types'
+import { OrderStatus, TableStatus, UserRole, type Table, type TableStatus as TableStatusType } from '@/types'
 import { getTableStatusColor, getTableStatusLabel } from '@/utils'
 import TableRestaurantRoundedIcon from '@mui/icons-material/TableRestaurantRounded'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useCartStore } from '@/store'
 import { ApiError } from '@/services/api'
 
 const filters: Array<TableStatusType | 'all'> = [
@@ -20,10 +21,12 @@ const filters: Array<TableStatusType | 'all'> = [
 ]
 
 export function TablesPage() {
+  const navigate = useNavigate()
   const { data: tables, isLoading } = useTables()
   const openTable = useOpenTable()
   const requestBill = useRequestBill()
   const user = useAuthStore((s) => s.user)
+  const selectTable = useCartStore((s) => s.selectTable)
   const { enqueueSnackbar } = useSnackbar()
   const [filter, setFilter] = useState<TableStatusType | 'all'>('all')
   const [selected, setSelected] = useState<Table | null>(null)
@@ -34,17 +37,31 @@ export function TablesPage() {
     return tables.filter((t) => t.status === filter)
   }, [tables, filter])
 
-  const canManage = user?.role === UserRole.WAITER || user?.role === UserRole.ADMIN
+  const canManage =
+    user?.role === UserRole.WAITER ||
+    user?.role === UserRole.ADMIN ||
+    user?.role === UserRole.MANAGER
   const canOpen =
     Boolean(selected) &&
     canManage &&
     (selected?.status === TableStatus.FREE || selected?.status === TableStatus.CLOSED)
-  const canRequestBill =
+  const activeOrders = selected?.orders ?? []
+  const hasConsumedItems = activeOrders.some((order) => (order.items?.length ?? 0) > 0)
+  const allConsumedOrdersDelivered =
+    hasConsumedItems && activeOrders.every((order) => order.status === OrderStatus.DELIVERED)
+  const canAddOrder =
     Boolean(selected) &&
     canManage &&
     selected?.status !== TableStatus.FREE &&
     selected?.status !== TableStatus.CLOSED &&
     selected?.status !== TableStatus.WAITING_PAYMENT
+  const canRequestBill = canAddOrder && allConsumedOrdersDelivered
+
+  const handleOrder = () => {
+    if (!selected) return
+    selectTable(selected.id, selected.number)
+    navigate('/garcom')
+  }
 
   const handleOpen = async () => {
     if (!selected) return
@@ -160,12 +177,23 @@ export function TablesPage() {
           <Button onClick={() => setSelected(null)} color="inherit">
             Fechar
           </Button>
+          {canAddOrder && (
+            <Button
+              variant={hasConsumedItems ? 'outlined' : 'contained'}
+              color="secondary"
+              onClick={handleOrder}
+              sx={{ minWidth: 150, whiteSpace: 'nowrap' }}
+            >
+              {hasConsumedItems ? 'Adicionar pedido' : 'Realizar pedido'}
+            </Button>
+          )}
           {canRequestBill && (
             <Button
-              variant="outlined"
+              variant="contained"
               color="secondary"
               onClick={() => void handleBill()}
               disabled={requestBill.isPending}
+              sx={{ minWidth: 150 }}
             >
               Solicitar conta
             </Button>

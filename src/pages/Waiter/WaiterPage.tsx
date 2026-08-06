@@ -130,7 +130,11 @@ export function WaiterPage() {
   const handleSelectTable = async (table: (typeof availableTables)[number]) => {
     try {
       if (table.status === TableStatus.FREE || table.status === TableStatus.CLOSED) {
-        if (user?.role !== UserRole.WAITER && user?.role !== UserRole.ADMIN) {
+        if (
+          user?.role !== UserRole.WAITER &&
+          user?.role !== UserRole.ADMIN &&
+          user?.role !== UserRole.MANAGER
+        ) {
           enqueueSnackbar('Apenas garçom/admin pode abrir mesa', { variant: 'warning' })
           return
         }
